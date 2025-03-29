@@ -66,11 +66,9 @@ class ViolaJonesWidget(QWidget):
         src_controls_layout.addWidget(self.select_source_dir_button)
         self.prev_source_button = QPushButton("Предыдущая")
         self.prev_source_button.clicked.connect(self.prevSource)
-        self.prev_source_button.clicked.connect(self.detectFaces)
         src_controls_layout.addWidget(self.prev_source_button)
         self.next_source_button = QPushButton("Следующая")
         self.next_source_button.clicked.connect(self.nextSource)
-        self.next_source_button.clicked.connect(self.detectFaces)
         src_controls_layout.addWidget(self.next_source_button)
         self.source_info_label = QLabel("Нет изображений")
         src_controls_layout.addWidget(self.source_info_label)
@@ -84,15 +82,39 @@ class ViolaJonesWidget(QWidget):
         if self.cv_image is None:
             return
         gray = cv2.cvtColor(self.cv_image, cv2.COLOR_BGR2GRAY)
-        cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-        face_cascade = cv2.CascadeClassifier(cascade_path)
-        if face_cascade.empty():
-            print("Ошибка загрузки каскада:", cascade_path)
-            return
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+        
         result_img = self.cv_image.copy()
-        for (x, y, w, h) in faces:
-            cv2.rectangle(result_img, (x, y), (x+w, y+h), (255, 0, 0), 2)
+        
+        # Детекция лица
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+        if not face_cascade.empty():
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+            for (x, y, w, h) in faces:
+                cv2.rectangle(result_img, (x, y), (x+w, y+h), (0, 255, 0), 2)  # Лицо – зелёный
+
+        # Детекция глаз
+        eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
+        if not eye_cascade.empty():
+            eyes = eye_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+            for (x, y, w, h) in eyes:
+                cv2.rectangle(result_img, (x, y), (x+w, y+h), (255, 0, 0), 2)  # Глаза – синий
+
+        # Детекция улыбки
+        smile_cascade = cv2.CascadeClassifier(fr"{prefix}\public\src\haarcascade_smile.xml")
+        if not smile_cascade.empty():
+            smiles = smile_cascade.detectMultiScale(gray, scaleFactor=1.7, minNeighbors=20, flags=cv2.CASCADE_SCALE_IMAGE)
+            for (x, y, w, h) in smiles:
+                cv2.rectangle(result_img, (x, y), (x+w, y+h), (0, 165, 255), 2)  # Улыбка – оранжевый
+        
+        # Детекция носа
+        nose_cascade = cv2.CascadeClassifier(fr"{prefix}\public\src\haarcascade_nose.xml")
+        if not nose_cascade.empty():
+            smiles = nose_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=8, flags=cv2.CASCADE_SCALE_IMAGE)
+            for (x, y, w, h) in smiles:
+                cv2.rectangle(result_img, (x, y), (x+w, y+h), (123, 104, 238), 2)  # Нос – сине-фиолетовый
+        
+        
+        
         result_rgb = cv2.cvtColor(result_img, cv2.COLOR_BGR2RGB)
         height, width, channels = result_rgb.shape
         bytes_per_line = 3 * width

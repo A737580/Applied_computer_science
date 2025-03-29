@@ -18,7 +18,7 @@ class MainWindow(QMainWindow):
         self.template_matching_tab = SymmetryLinesWidget()
         tab_widget.addTab(self.template_matching_tab, "Symmetry Lines")
         self.template_maker = TemplateMaker()
-        tab_widget.addTab(self.template_maker, "Template Maker")
+        tab_widget.addTab(self.template_maker, "Template maker")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

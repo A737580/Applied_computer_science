@@ -11,6 +11,7 @@ class SymmetryLinesWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.cv_image = None      # Исходное изображение (OpenCV)
+        self.resultImage = None
         self.source_images = []   # Список файлов исходных изображений
         self.current_source_index = -1
 
@@ -64,11 +65,9 @@ class SymmetryLinesWidget(QWidget):
         src_controls_layout.addWidget(self.select_source_dir_button)
         self.prev_source_button = QPushButton("Предыдущая")
         self.prev_source_button.clicked.connect(self.prevSource)
-        self.prev_source_button.clicked.connect(self.detectSymmetryLines)
         src_controls_layout.addWidget(self.prev_source_button)
         self.next_source_button = QPushButton("Следующая")
         self.next_source_button.clicked.connect(self.nextSource)
-        self.next_source_button.clicked.connect(self.detectSymmetryLines)
         src_controls_layout.addWidget(self.next_source_button)
         self.source_info_label = QLabel("Нет изображений")
         src_controls_layout.addWidget(self.source_info_label)
@@ -80,6 +79,28 @@ class SymmetryLinesWidget(QWidget):
         right_layout.addStretch()
 
         main_layout.addLayout(right_layout, stretch=1)
+
+
+
+    def saveTemplate(self):
+        if not hasattr(self, 'resultImage') or self.resultImage is None:
+            return
+        
+        # Открываем диалог выбора файла
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Сохранить шаблон",
+            fr"{prefix}\public\faceRecognition\3.customTemplatesAndResults",
+            "PPM Image (*.ppm)"
+        )
+        
+        if filename:
+            try:
+                cv2.imwrite(filename, self.resultImage)
+                print(f"Шаблон сохранен как {filename}")
+            except Exception as e:
+                print(f"Ошибка сохранения: {e}")
+
 
     def detectSymmetryLines(self):
         if self.cv_image is None:
@@ -123,6 +144,7 @@ class SymmetryLinesWidget(QWidget):
         bytes_per_line = 3 * width_res
         q_image_result = QImage(result_rgb.data, width_res, height_res, bytes_per_line, QImage.Format_RGB888)
         result_pixmap = QPixmap.fromImage(q_image_result)
+        self.resultImage = result_img.copy()
         self.setPixmapToLabel(self.result_label, result_pixmap)
 
     def setPixmapToLabel(self, label, pixmap):

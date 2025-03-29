@@ -11,6 +11,8 @@ class TemplateMatchingWidget(QWidget):
         super().__init__(parent)
         self.cv_image = None      # Исходное изображение (OpenCV)
         self.template = None      # Шаблонное изображение (OpenCV)
+        self.resultImage = None
+        self.detecredParts = None
         self.source_images = []   # Список файлов исходных изображений
         self.template_images = [] # Список файлов шаблонов
         self.current_source_index = -1
@@ -90,6 +92,8 @@ class TemplateMatchingWidget(QWidget):
         controls_layout.addWidget(self.detect_parts_button)
         main_layout.addLayout(controls_layout)
 
+        
+        
         # Отображение результата
         labels_layout = QHBoxLayout()
         labels_layout.addWidget(QLabel("Результат"))
@@ -110,6 +114,45 @@ class TemplateMatchingWidget(QWidget):
         result_layout.addWidget(self.mathing_result_label)
         main_layout.addLayout(result_layout)
 
+    def saveDetectedParts(self):
+        if not hasattr(self, 'detecredParts') or self.detecredParts is None:
+            return
+        
+        # Открываем диалог выбора файла
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Сохранить результат",
+            fr"{prefix}\public\faceRecognition\3.customTemplatesAndResults",
+            "PPM Image (*.ppm)"
+        )
+        
+        if filename:
+            try:
+                cv2.imwrite(filename, self.detecredParts)
+                print(f"Шаблон сохранен как {filename}")
+            except Exception as e:
+                print(f"Ошибка сохранения: {e}")
+
+
+    def saveTemplate(self):
+        if not hasattr(self, 'resultImage') or self.resultImage is None:
+            return
+        
+        # Открываем диалог выбора файла
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Сохранить шаблон",
+            fr"{prefix}\public\faceRecognition\customTemplates",
+            "PPM Image (*.ppm)"
+        )
+        
+        if filename:
+            try:
+                cv2.imwrite(filename, self.resultImage)
+                print(f"Шаблон сохранен как {filename}")
+            except Exception as e:
+                print(f"Ошибка сохранения: {e}")
+
     def setPixmapToLabel(self, label, pixmap):
         """
         Если изображение больше размера label, масштабирует с сохранением пропорций.
@@ -123,7 +166,7 @@ class TemplateMatchingWidget(QWidget):
 
     # Методы для исходных изображений
     def selectSourceDir(self):
-        dir_path = QFileDialog().getExistingDirectory(self, "Выбрать папку с изображениями",fr"{prefix}\public\faceRecognition\original")
+        dir_path = QFileDialog().getExistingDirectory(self, "Выбрать папку с изображениями",fr"{prefix}\public\faceRecognition\1.original")
         if dir_path:
             patterns = ["*.png", "*.jpg", "*.jpeg", "*.bmp"]
             files = []
@@ -239,6 +282,7 @@ class TemplateMatchingWidget(QWidget):
         bytes_per_line = 3 * width_res
         q_image_result = QImage(result_rgb.data, width_res, height_res, bytes_per_line, QImage.Format_RGB888)
         result_pixmap = QPixmap.fromImage(q_image_result)
+        self.resultImage = result_img.copy()
         self.setPixmapToLabel(self.result_label, result_pixmap)
 
     def detectFaceParts(self):
@@ -262,15 +306,23 @@ class TemplateMatchingWidget(QWidget):
                 cv2.rectangle(result_img, (x, y), (x+w, y+h), (255, 0, 0), 2)  # Глаза – синий
 
         # Детекция улыбки
-        smile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_smile.xml")
+        smile_cascade = cv2.CascadeClassifier(fr"{prefix}\public\src\haarcascade_smile.xml")
         if not smile_cascade.empty():
-            smiles = smile_cascade.detectMultiScale(gray, scaleFactor=1.7, minNeighbors=22)
+            smiles = smile_cascade.detectMultiScale(gray, scaleFactor=1.7, minNeighbors=20, flags=cv2.CASCADE_SCALE_IMAGE)
             for (x, y, w, h) in smiles:
                 cv2.rectangle(result_img, (x, y), (x+w, y+h), (0, 165, 255), 2)  # Улыбка – оранжевый
-
+        
+        # Детекция носа
+        nose_cascade = cv2.CascadeClassifier(fr"{prefix}\public\src\haarcascade_nose.xml")
+        if not nose_cascade.empty():
+            smiles = nose_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=8, flags=cv2.CASCADE_SCALE_IMAGE)
+            for (x, y, w, h) in smiles:
+                cv2.rectangle(result_img, (x, y), (x+w, y+h), (123, 104, 238), 2)  # Нос – сине-фиолетовый
+        
         result_rgb = cv2.cvtColor(result_img, cv2.COLOR_BGR2RGB)
         height_res, width_res, channels = result_rgb.shape
         bytes_per_line = 3 * width_res
         q_image_result = QImage(result_rgb.data, width_res, height_res, bytes_per_line, QImage.Format_RGB888)
         result_pixmap = QPixmap.fromImage(q_image_result)
+        self.detecredParts = result_img.copy()
         self.setPixmapToLabel(self.mathing_result_label, result_pixmap)
