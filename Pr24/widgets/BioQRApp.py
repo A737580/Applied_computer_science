@@ -6,6 +6,7 @@ import json  # For serializing landmark data
 import qrcode  # For generating QR code for Layer 2
 from qrcode.image.pil import PilImage  # Specify PIL factory
 from pyzbar import pyzbar  # For decoding QR code from Layer 2
+from src.env import prefix
 
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -29,7 +30,7 @@ from widgets.SsimCompareWidget import SsimCompareWidget
 dlib_detector = None
 dlib_predictor = None
 
-DLIB_MODEL_FILENAME = "shape_predictor_68_face_landmarks.dat"
+DLIB_MODEL_FILENAME = fr"{prefix}\shape_predictor_68_face_landmarks.dat"
 
 SCRAMBLE_SEED_R = 42 + 0
 SCRAMBLE_SEED_B = 42 + 2
