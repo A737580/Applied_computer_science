@@ -6,7 +6,8 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtCore import Qt
 from .imageLabel import ImageLabel
-from env import prefix
+from src.env import home_prefix
+
 
 class TemplateMaker(QWidget):
     def __init__(self, parent=None):
@@ -149,7 +150,7 @@ class TemplateMaker(QWidget):
             label.setPixmap(pixmap)
 
     def selectSourceDir(self):
-        dir_path = QFileDialog().getExistingDirectory(self, "Выбрать папку с изображениями",fr"{prefix}\public\faceRecognition\original")
+        dir_path = QFileDialog().getExistingDirectory(self, "Выбрать папку с изображениями",fr"{home_prefix}\public\faceRecognition\1.original")
         if dir_path:
             patterns = ["*.png", "*.jpg", "*.jpeg", "*.bmp"]
             files = []
@@ -199,7 +200,7 @@ class TemplateMaker(QWidget):
         filename, _ = QFileDialog.getSaveFileName(
             self,
             "Сохранить шаблон",
-            fr"{prefix}\public\faceRecognition\customTemplates",
+            fr"{home_prefix}\public\faceRecognition\3.customTemplatesAndResults",
             "PNG Image (*.png);;PPM Image (*.ppm)"
         )
         

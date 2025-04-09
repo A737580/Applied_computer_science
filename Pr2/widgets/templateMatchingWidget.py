@@ -5,7 +5,8 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                                QPushButton, QLabel, QFileDialog, QComboBox, QFrame)
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtCore import Qt
-from env import prefix
+from src.env import src_prefix, home_prefix
+
 class TemplateMatchingWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -122,7 +123,7 @@ class TemplateMatchingWidget(QWidget):
         filename, _ = QFileDialog.getSaveFileName(
             self,
             "Сохранить результат",
-            fr"{prefix}\public\faceRecognition\3.customTemplatesAndResults",
+            fr"{home_prefix}\public\faceRecognition\3.customTemplatesAndResults",
             "PPM Image (*.ppm)"
         )
         
@@ -142,7 +143,7 @@ class TemplateMatchingWidget(QWidget):
         filename, _ = QFileDialog.getSaveFileName(
             self,
             "Сохранить шаблон",
-            fr"{prefix}\public\faceRecognition\customTemplates",
+            fr"{home_prefix}\public\faceRecognition\customTemplates",
             "PPM Image (*.ppm)"
         )
         
@@ -166,7 +167,7 @@ class TemplateMatchingWidget(QWidget):
 
     # Методы для исходных изображений
     def selectSourceDir(self):
-        dir_path = QFileDialog().getExistingDirectory(self, "Выбрать папку с изображениями",fr"{prefix}\public\faceRecognition\1.original")
+        dir_path = QFileDialog().getExistingDirectory(self, "Выбрать папку с изображениями",fr"{home_prefix}\public\faceRecognition\1.original")
         if dir_path:
             patterns = ["*.png", "*.jpg", "*.jpeg", "*.bmp"]
             files = []
@@ -208,7 +209,7 @@ class TemplateMatchingWidget(QWidget):
 
     # Методы для шаблонных изображений
     def selectTemplateDir(self):
-        dir_path = QFileDialog.getExistingDirectory(self, "Выбрать папку с шаблонами",fr"{prefix}\public\faceRecognition\templates")
+        dir_path = QFileDialog.getExistingDirectory(self, "Выбрать папку с шаблонами",fr"{home_prefix}\public\faceRecognition\templates")
         if dir_path:
             patterns = ["*.png", "*.jpg", "*.jpeg", "*.bmp","*.ppm"]
             files = []
@@ -306,14 +307,14 @@ class TemplateMatchingWidget(QWidget):
                 cv2.rectangle(result_img, (x, y), (x+w, y+h), (255, 0, 0), 2)  # Глаза – синий
 
         # Детекция улыбки
-        smile_cascade = cv2.CascadeClassifier(fr"{prefix}\public\src\haarcascade_smile.xml")
+        smile_cascade = cv2.CascadeClassifier(fr"{src_prefix}\haarcascade_smile.xml")
         if not smile_cascade.empty():
             smiles = smile_cascade.detectMultiScale(gray, scaleFactor=1.7, minNeighbors=20, flags=cv2.CASCADE_SCALE_IMAGE)
             for (x, y, w, h) in smiles:
                 cv2.rectangle(result_img, (x, y), (x+w, y+h), (0, 165, 255), 2)  # Улыбка – оранжевый
         
         # Детекция носа
-        nose_cascade = cv2.CascadeClassifier(fr"{prefix}\public\src\haarcascade_nose.xml")
+        nose_cascade = cv2.CascadeClassifier(fr"{src_prefix}\haarcascade_nose.xml")
         if not nose_cascade.empty():
             smiles = nose_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=8, flags=cv2.CASCADE_SCALE_IMAGE)
             for (x, y, w, h) in smiles:

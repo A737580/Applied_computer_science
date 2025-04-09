@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                                QPushButton, QLabel, QFileDialog, QFrame, QSizePolicy)
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtCore import Qt
-from env import prefix
+from src.env import home_prefix
 
 class SymmetryLinesWidget(QWidget):
     def __init__(self, parent=None):
@@ -90,7 +90,7 @@ class SymmetryLinesWidget(QWidget):
         filename, _ = QFileDialog.getSaveFileName(
             self,
             "Сохранить шаблон",
-            fr"{prefix}\public\faceRecognition\3.customTemplatesAndResults",
+            fr"{home_prefix}\public\faceRecognition\3.customTemplatesAndResults",
             "PPM Image (*.ppm)"
         )
         
@@ -159,7 +159,7 @@ class SymmetryLinesWidget(QWidget):
             label.setPixmap(pixmap)
 
     def selectSourceDir(self):
-        dir_path = QFileDialog().getExistingDirectory(self, "Выбрать папку с изображениями",fr"{prefix}\public\faceRecognition\facesOnly")
+        dir_path = QFileDialog().getExistingDirectory(self, "Выбрать папку с изображениями",fr"{home_prefix}\public\faceRecognition\facesOnly")
         if dir_path:
             patterns = ["*.png", "*.jpg", "*.jpeg", "*.bmp"]
             files = []
