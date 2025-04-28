@@ -8,7 +8,9 @@ def get_caller_abs_path():
     caller_filename = caller_frame.filename  # Имя файла вызывающего кода
     return os.path.dirname(os.path.abspath(caller_filename))
 
-prefix = get_caller_abs_path()
+src_prefix = get_caller_abs_path()
 
 def get_parent_dir(dir:str):
     return os.path.dirname(dir)
+
+home_dir_prefix = get_parent_dir(src_prefix)
